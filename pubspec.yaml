@@ -1,0 +1,27 @@
+name: dzt_interview_task
+description: "DZT interview task"
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.2.3 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  community_material_icon: ^5.9.55
+  json_annotation: ^4.8.1
+  equatable: ^2.0.5
+  flutter_html: ^3.0.0-beta.2
+  just_audio: ^0.9.36
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  json_serializable: ^6.7.1
+  build_runner: ^2.4.7
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true
