@@ -97,17 +97,26 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  // TODO: Read HTML content from lesson.html in assets
-  final lesson = Lesson(
-      "interview",
-      "Урок 1: звучати",
-      '',
-      'https://firebasestorage.googleapis.com/v0/b/tekstom-0.appspot.com/o/courses%2F45dccaf4-f447-448f-96a5-409945b7410a%2Flessons%2F1%2Faudio.mp3?alt=media&token=0ea5af4b-7831-4163-a633-b449d06ffc6b');
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: lightTheme,
-        home: LessonScreen(courseId: "interview", lesson: lesson));
+        theme: lightTheme,
+        home: FutureBuilder<String>(
+            future: rootBundle.loadString('assets/lesson.html'),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return LessonScreen(
+                  courseId: 'interview',
+                  lesson: Lesson(
+                    'interview',
+                    'Урок 1: звучати',
+                    snapshot.data ?? '',
+                    'https://firebasestorage.googleapis.com/v0/b/tekstom-0.appspot.com/o/courses%2F45dccaf4-f447-448f-96a5-409945b7410a%2Flessons%2F1%2Faudio.mp3?alt=media&token=0ea5af4b-7831-4163-a633-b449d06ffc6b',
+                  ),
+                );
+              } else {
+                return const Center(child: CircularProgressIndicator());
+              }
+            }));
   }
 }
