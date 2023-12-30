@@ -14,9 +14,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:provider/provider.dart';
 
-// TODO: Implement new feature per design
-// Design url: https://www.figma.com/file/JyLQZote5XKx3GrzM75Igg/Test?type=design&node-id=0-1&mode=design&t=s7dQwNTEK6yFmyTI-0
-
 class LessonScreen extends StatefulWidget {
   const LessonScreen({
     super.key,
@@ -35,16 +32,15 @@ class _LessonScreenState extends State<LessonScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late List<Animation<Offset>> _animations;
+  Offset position = const Offset(0, 0);
   final random = Random();
 
   String htmlData = '';
   List<HtmlExtension> htmlExtensions = [];
-  Offset position = const Offset(0, 0);
 
   @override
   void initState() {
     super.initState();
-
     _animationController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
@@ -60,11 +56,6 @@ class _LessonScreenState extends State<LessonScreen>
           curve: Curves.easeIn,
         ),
       ),
-    );
-
-    htmlData = textWithSpecialCharacter(
-      text: widget.lesson.text,
-      character: 'ґ',
     );
   }
 
@@ -103,7 +94,10 @@ class _LessonScreenState extends State<LessonScreen>
                         Expanded(
                           child: SingleChildScrollView(
                             child: Html(
-                              data: htmlData,
+                              data: textWithSpecialCharacter(
+                                text: widget.lesson.text,
+                                character: 'ґ',
+                              ),
                               extensions: htmlExtensions,
                             ),
                           ),
@@ -165,134 +159,7 @@ class _LessonScreenState extends State<LessonScreen>
     for (int i = 0; i < text.length; i++) {
       if (text[i] == character) {
         htmlExtensions.add(
-          TagExtension(
-            tagsToExtend: {"flutter-$index"},
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTapDown: (details) async {
-                position = details.globalPosition;
-                final lessonProvider = context.read<LessonProvider>();
-
-                if (lessonProvider.isSpecialCharacterFound &&
-                    lessonProvider.tapCounts[index] == 0) {
-                  launchAnimation();
-                  lessonProvider.tapCounts[index] =
-                      lessonProvider.tapCounts[index] + 1;
-                }
-
-                if (!lessonProvider.isSpecialCharacterFound) {
-                  await showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (context) => AlertDialog(
-                      title: const Center(
-                          child: Text('Вітаємо!',
-                              style: TextStyle(
-                                fontSize: 26,
-                                color: secondaryColor,
-                                fontWeight: FontWeight.bold,
-                              ))),
-                      content: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: AssetImage(
-                              'assets/confetti.png',
-                            ), // replace with your image path
-                            fit: BoxFit.fill,
-                          ),
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        child: const Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Ви знайшли точку Ґ',
-                              style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: secondaryColor),
-                            ),
-                            SizedBox(height: 16),
-                            Text(
-                                'Уважно читайте тексти уроків і ви знайдете ще не одну точку ґ.\n За кожну таку знахідку ви отримаєте +5 енергії.',
-                                style: TextStyle(
-                                    fontSize: 16, color: secondaryColor),
-                                textAlign: TextAlign.center),
-                          ],
-                        ),
-                      ),
-                      actions: [
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.6,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: secondaryColor,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            onPressed: () async {
-                              Navigator.of(context).pop();
-                              launchAnimation();
-                              lessonProvider.isSpecialCharacterFound = true;
-                            },
-                            child: const Text(
-                              'Клас',
-                              style: TextStyle(fontSize: 16, color: beigeColor),
-                            ),
-                          ),
-                        ),
-                      ],
-                      actionsAlignment: MainAxisAlignment.center,
-                      actionsPadding: const EdgeInsets.only(bottom: 36),
-                    ),
-                  );
-                }
-              },
-              child: ElTooltip(
-                timeout: const Duration(seconds: 2),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                showModal: false,
-                color: context.read<LessonProvider>().tapCounts[index] == 1
-                    ? Colors.yellow[100]!
-                    : Colors.black38,
-                content: context.read<LessonProvider>().tapCounts[index] == 1
-                    ? Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('+5', style: TextStyle(fontSize: 16)),
-                          Image.asset('assets/bonus_energy.png'),
-                        ],
-                      )
-                    : const Text(
-                        'Цю точку ґ ви вже знайшли',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color:
-                            context.read<LessonProvider>().tapCounts[index] == 1
-                                ? Colors.yellow[200]!
-                                : Colors.transparent,
-                        blurRadius: 3,
-                        spreadRadius: 3,
-                        blurStyle: BlurStyle.solid,
-                      ),
-                    ],
-                    borderRadius: const BorderRadius.all(Radius.circular(8)),
-                  ),
-                  child: Text(
-                    character,
-                    style: getTextStyle(classes[index]),
-                  ),
-                ),
-              ),
-            ),
-          ),
+          tagExtension(index, classes, character),
         );
 
         result =
@@ -302,6 +169,144 @@ class _LessonScreenState extends State<LessonScreen>
     }
 
     return result;
+  }
+
+  TagExtension tagExtension(int index, List<String> classes, String character) {
+    return TagExtension(
+      tagsToExtend: {"flutter-$index"},
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTapDown: (details) async {
+          position = details.globalPosition;
+
+          if (context.read<LessonProvider>().isSpecialCharacterFound &&
+              context.read<LessonProvider>().tapCounts[index] == 0) {
+            launchAnimation();
+          }
+
+          if (!context.read<LessonProvider>().isSpecialCharacterFound) {
+            await showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => findCharacterDialog(context),
+            );
+          }
+
+          context.read<LessonProvider>().tapCounts[index] =
+              context.read<LessonProvider>().tapCounts[index] + 1;
+
+          setState(() {});
+        },
+        child: ElTooltip(
+          timeout: const Duration(seconds: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          showModal: false,
+          color: context.watch<LessonProvider>().tapCounts[index] == 0
+              ? Colors.yellow[100]!
+              : Colors.black38,
+          content: context.watch<LessonProvider>().tapCounts[index] == 0
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('+5', style: TextStyle(fontSize: 16)),
+                    Image.asset('assets/bonus_energy.png'),
+                  ],
+                )
+              : const Text(
+                  'Цю точку ґ ви вже знайшли',
+                  style: TextStyle(color: Colors.white),
+                ),
+          child: Container(
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: context.watch<LessonProvider>().tapCounts[index] == 1
+                      ? Colors.yellow[200]!
+                      : Colors.transparent,
+                  blurRadius: 3,
+                  spreadRadius: 3,
+                  blurStyle: BlurStyle.solid,
+                ),
+              ],
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+            ),
+            child: Text(
+              character,
+              style: getTextStyle(classes[index]),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget findCharacterDialog(BuildContext context) {
+    return AlertDialog(
+      title: const Center(
+        child: Text(
+          'Вітаємо!',
+          style: TextStyle(
+            fontSize: 26,
+            color: secondaryColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      content: Container(
+        decoration: BoxDecoration(
+          image: const DecorationImage(
+            image: AssetImage(
+              'assets/confetti.png',
+            ), // replace with your image path
+            fit: BoxFit.fill,
+          ),
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        child: const Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Ви знайшли точку Ґ',
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: secondaryColor),
+            ),
+            SizedBox(height: 16),
+            Text(
+                'Уважно читайте тексти уроків і ви знайдете ще не одну точку ґ.\n За кожну таку знахідку ви отримаєте +5 енергії.',
+                style: TextStyle(fontSize: 16, color: secondaryColor),
+                textAlign: TextAlign.center),
+          ],
+        ),
+      ),
+      actions: [
+        SizedBox(
+          width: MediaQuery.of(context).size.width * 0.6,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: secondaryColor,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () async {
+              Navigator.of(context).pop();
+              context.read<LessonProvider>().isSpecialCharacterFound = true;
+              launchAnimation();
+            },
+            child: const Text(
+              'Клас',
+              style: TextStyle(fontSize: 16, color: beigeColor),
+            ),
+          ),
+        ),
+      ],
+      actionsAlignment: MainAxisAlignment.center,
+      actionsPadding: const EdgeInsets.only(bottom: 36),
+    );
   }
 
   void launchAnimation() {
